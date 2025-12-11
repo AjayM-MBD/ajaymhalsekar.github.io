@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>EPB motor winding temperature — i²R losses and thermal behavior — AutoAjay</title>
+  <meta name="description" content="Detailed engineering article: why EPB winding temperature rises above 100°C, i²R losses, thermal model, diagnostics and mitigations."/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1><a href="/index.html">AutoAjay</a></h1>
+      <nav>
+        <a href="/index.html">Home</a> |
+        <a href="/about.html">About</a> |
+        <a href="/blog/epb-temperature.html">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container article">
+    <article>
+      <h2>EPB motor winding temperature — i²R losses and thermal behavior</h2>
+      <p><strong>Overview</strong>: This article explains why the Electronic Parking Brake (EPB) motor winding temperature can exceed 100&nbsp;°C, how i²R losses cause heating, how to model thermal behaviour, and practical diagnostics &amp; mitigations.</p>
+
+      <h3>1. Fundamentals — i²R losses and where heat appears</h3>
+      <p>When current flows through a motor winding or coil, resistive losses occur. The instantaneous electrical power dissipated as heat is:</p>
+      <pre><code>P(t) = I(t)^2 · R</code></pre>
+      <p>where <em>I(t)</em> is instantaneous current and <em>R</em> is the winding resistance. For a time-varying current, the average loss over a period T is:</p>
+      <pre><code>P_avg = (1/T) ∫_0^T I(t)^2 dt · R</code></pre>
+
+      <h3>2. Why temperature can exceed 100&nbsp;°C</h3>
+      <ul>
+        <li><strong>Continuous high current:</strong> If the EPB is holding torque or repeatedly actuated without sufficient cool-down, cumulative energy raises the winding temperature.</li>
+        <li><strong>High resistance at contacts:</strong> Poor connectors or partial shorts increase local heating.</li>
+        <li><strong>Mechanical binding or increased torque load:</strong> The motor draws more current to overcome friction or jam, increasing i²R losses.</li>
+        <li><strong>Ambient and packaging:</strong> Enclosure with poor heat-sinking and high ambient reduces heat dissipation.</li>
+      </ul>
+
+      <h3>3. Simple thermal model (lumped parameter)</h3>
+      <p>A commonly used first-order thermal model treats the winding as a lumped thermal mass with thermal capacitance C_th (J/K) and thermal resistance R_th (K/W) to ambient:</p>
+      <pre><code>C_th · (dT/dt) = P_loss(t) - (T - T_ambient)/R_th</code></pre>
+      <p>Where <em>P_loss(t)</em> = I(t)^2 · R. At steady-state (dT/dt = 0):</p>
+      <pre><code>T_ss = T_ambient + P_avg · R_th</code></pre>
+      <p>This formula shows why high average power and high thermal resistance lead to high steady-state temperature.</p>
+
+      <h3>4. Example calculation</h3>
+      <p>Assume:</p>
+      <ul>
+        <li>Winding resistance R = 2 Ω</li>
+        <li>RMS current during hold I_rms = 3 A</li>
+        <li>P_avg = I_rms^2 · R = 9 · 2 = 18 W</li>
+        <li>Thermal resistance R_th = 3 K/W, ambient 40&nbsp;°C</li>
+      </ul>
+      <p>Then steady-state temperature:</p>
+      <pre><code>T_ss = 40 + 18 * 3 = 94 °C</code></pre>
+      <p>If current increases to 4 A, P_avg = 32 W → T_ss = 40 + 32*3 = 136 °C (exceeds 100 °C).</p>
+
+      <h3>5. Where does heat concentrate?</h3>
+      <p>Heat is generated in:</p>
+      <ul>
+        <li>Winding copper (bulk resistive loss)</li>
+        <li>Local hotspots at poor solder joints or connector pins</li>
+        <li>Magnetic losses (eddy current &amp; hysteresis) in iron if present (less in small EPB motors but not zero)</li>
+      </ul>
+
+      <h3>6. Diagnostics &amp; measurements</h3>
+      <ul>
+        <li>Measure motor current during actuation and holding phases — use RMS measurement or log I(t).</li>
+        <li>Measure winding resistance at cold and after thermal stabilization; rising R with temperature is expected (R(T)=R0[1+α(T-T0)]).</li>
+        <li>Thermistor or temperature sensor mounted near the winding — for in-field protection and data logging.</li>
+        <li>CAN signals &amp; ECU logs — monitor duty-cycle, torque requests and fault counters.</li>
+      </ul>
+
+      <h3>7. Mitigations</h3>
+      <ol>
+        <li><strong>Reduce average current:</strong> Use PWM hold methods with low duty cycle and enough refresh rate to reduce RMS current while preserving torque.</li>
+        <li><strong>Thermal protection:</strong> Implement overtemperature thresholds and automatic rest cycles or derating.</li>
+        <li><strong>Mechanical fixes:</strong> Reduce friction, ensure proper lubrication and mechanical free-play to avoid high torque draw.</li>
+        <li><strong>Improve heat dissipation:</strong> Better thermal path from winding to housing, use heat-conductive potting or heatsink features.</li>
+        <li><strong>Quality electrical connections:</strong> Proper crimping, soldering and connector selection to prevent localized overheating.</li>
+      </ol>
+
+      <h3>8. Simulink modelling (practical)</h3>
+      <p>Create a simple Simulink model with three blocks:</p>
+      <ol>
+        <li>Current profile generator (step + noise or PWM averaged value)</li>
+        <li>Loss calculator: I(t)^2 * R</li>
+        <li>Thermal mass: Integrator for C_th and heat flow through R_th to ambient</li>
+      </ol>
+      <p>This produces a temperature vs time plot that helps design safe duty cycles. (A sample .mdl/.slx file can be included in the repo — avoid sharing OEM-proprietary models.)</p>
+
+      <h3>9. Practical test checklist</h3>
+      <ul>
+        <li>Log current and temperature during repeated actuations</li>
+        <li>Measure connector temperatures with thermal camera</li>
+        <li>Confirm R_th via steady-state test with known power</li>
+        <li>Test failure modes: jam, binding, shorted turns</li>
+      </ul>
+
+      <h3>10. Conclusion</h3>
+      <p>Winding temperature depends on average i²R losses, thermal resistance to ambient, and duty cycle. Simple lumped-parameter thermal models give good first-order estimates and are useful to create thermal protection strategies in EPB ECUs.</p>
+
+      <p><em>Next steps:</em> download the example files from the repository and run the Simulink demo to observe how duty cycle and RMS current affect steady-state temperature.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2025 AutoAjay</p>
+    </div>
+  </footer>
+</body>
+</html>
