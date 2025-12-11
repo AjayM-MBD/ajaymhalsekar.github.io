@@ -1,21 +1,28 @@
 
-/* Simple responsive styles */
+/* Improved responsive styles without external fonts */
 :root{
-  --maxw:900px;
+  --maxw:980px;
   --accent:#1a73e8;
+  --muted:#6b7280;
+  --bg:#ffffff;
 }
-body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;line-height:1.5;margin:0;color:#111;background:#f7f8fb}
-.container{max-width:var(--maxw);margin:0 auto;padding:20px}
-.site-header{background:#fff;border-bottom:1px solid #e6e9ef}
-.site-header .container{display:flex;align-items:center;gap:20px}
-.site-header h1{margin:12px 0;font-size:20px}
-.site-header nav{margin-left:auto}
-.site-header a{color:var(--accent);text-decoration:none}
-.hero{padding:24px 0}
-.hero h2{margin:0 0 8px}
+*{box-sizing:border-box}
+body{font-family:Georgia, 'Times New Roman', serif;line-height:1.6;margin:0;color:#111;background:#f3f4f6}
+.container{max-width:var(--maxw);margin:0 auto;padding:28px}
+.site-header{background:var(--bg);border-bottom:1px solid #e6e9ef;padding:18px 0}
+.brand{font-size:28px;margin:0;color:#111}
+.tagline{margin:6px 0;color:var(--muted)}
+.mainnav{margin-top:10px}
+.mainnav a{margin-right:16px;color:var(--accent);text-decoration:none;font-weight:600}
+.hero h2{font-size:28px;margin:8px 0}
 .btn{display:inline-block;padding:10px 14px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none}
-.posts{list-style:none;padding-left:0}
-.posts li{margin:8px 0}
-.article h2{margin-top:8px}
+.posts{list-style:disc;padding-left:20px}
+.article .content{background:#fff;padding:22px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.article h2{margin-top:0}
 pre{background:#0f1724;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto}
-.site-footer{padding:18px 0;text-align:center;color:#666;font-size:14px}
+.site-footer{padding:20px 0;text-align:center;color:var(--muted);font-size:14px;margin-top:28px}
+@media (max-width:600px){
+  .hero h2{font-size:20px}
+  .brand{font-size:20px}
+  .container{padding:16px}
+}
